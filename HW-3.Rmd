@@ -150,10 +150,11 @@ bitcoin <- Quandl("BAVERAGE/USD") %>%
     Avg = `24h Average`,
     Total_Volume = `Total Volume`
   )
+ggplot(data=bitcoin, aes(x=Date, y=Avg)) +geom_point()
 
 gold <- Quandl("BUNDESBANK/BBK01_WT5511") %>%
   tbl_df() 
-
+ggplot(data=gold, aes(x=Date, y=Value)) +geom_point()
 
 
 
@@ -204,6 +205,10 @@ graveyard <- graveyard %>% mutate(hour = hour(date_time)) %>% filter(hour>= 0 & 
 graveyard_artist <- graveyard %>% group_by(artist) %>% tally()
 graveyard_artist %>% top_n(10)
 
+academic_year <- jukebox %>% mutate(date_time=parse_date_time(date_time,"a b! d! H: M:S Y!"))
+academic_year <- academic_year %>% mutate(month= month(date_time)) %>% filter(month <= 5 | month >=9)
+academic_artist <- academic_year %>% group_by(artist) %>% tally()
+academic_artist %>% top_n(10)
 
 
 ```
