@@ -196,7 +196,7 @@ gold <- Quandl("BUNDESBANK/BBK01_WT5511") %>%
 ggplot(data=gold, aes(x=Date, y=Value)) +geom_point()
 gold_changes <- gold %>% group_by(Date) %>% mutate(next_day = Date + 1) 
 gold_data <- full_join(gold_changes, gold, by= c("next_day"= "Date")) %>% mutate(relative_change = (Value.y-Value.x)/Value.x) %>% filter(!is.na(relative_change)) 
-ggplot(data=gold_data, aes(x=Date, y=relative_change)) +geom_point()
+ggplot() +geom_point(data=gold_data, aes(x=Date, y=relative_change))
 
 
 
@@ -242,15 +242,13 @@ the "graveyard shift" during the academic year? Define
 * the academic year as September through May (inclusive)
 
 ```{r, echo=TRUE, message=TRUE, warning=TRUE, fig.width=8, fig.height=4.5}
-graveyard <- jukebox %>% mutate(date_time=parse_date_time(date_time,"a b! d! H: M:S Y!"))
-graveyard <- graveyard %>% mutate(hour = hour(date_time)) %>% filter(hour>= 0 & hour <= 8) 
-graveyard_artist <- graveyard %>% group_by(artist) %>% tally()
-graveyard_artist %>% top_n(10)
-
 academic_year <- jukebox %>% mutate(date_time=parse_date_time(date_time,"a b! d! H: M:S Y!"))
 academic_year <- academic_year %>% mutate(month= month(date_time)) %>% filter(month <= 5 | month >=9)
-academic_artist <- academic_year %>% group_by(artist) %>% tally()
-academic_artist %>% top_n(10)
+
+
+graveyard <- academic_year %>% mutate(hour = hour(date_time)) %>% filter(hour>= 0 & hour <= 8) 
+graveyard_artist <- graveyard %>% group_by(artist) %>% tally()
+graveyard_artist %>% top_n(10) %>% knitr::kable()
 
 
 ```
