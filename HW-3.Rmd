@@ -25,7 +25,7 @@ library(forcats)
 Please indicate
 
 * Who you collaborated with: None
-* Roughly how much time you spent on this HW so far: 6
+* Roughly how much time you spent on this HW so far: 9
 * The URL of the RPubs published URL [here](http://rpubs.com/pinkfan9999/HW-3).
 * What gave you the most trouble:
 * Any comments you have:
@@ -186,23 +186,25 @@ bitcoin <- Quandl("BAVERAGE/USD") %>%
     Total_Volume = `Total Volume`
   )
 ggplot(data=bitcoin, aes(x=Date, y=Avg)) +geom_point()
-bitcoin_changes <- bitcoin %>% group_by(Date) %>% mutate(next_day = Date + 1) 
+bitcoin_changes <- bitcoin %>%  mutate(next_day = lead(Date)) 
 bitcoin_data <- full_join(bitcoin_changes, bitcoin, by= c("next_day"= "Date"))  %>% mutate(relative_change = (Avg.y-Avg.x)/Avg.x) %>% filter(!is.na(relative_change))
-ggplot(data=bitcoin_data, aes(x=Date, y=relative_change)) +geom_point()
+
 
 
 gold <- Quandl("BUNDESBANK/BBK01_WT5511") %>%
   tbl_df() 
 ggplot(data=gold, aes(x=Date, y=Value)) +geom_point()
-gold_changes <- gold %>% group_by(Date) %>% mutate(next_day = Date + 1) 
-gold_data <- full_join(gold_changes, gold, by= c("next_day"= "Date")) %>% mutate(relative_change = (Value.y-Value.x)/Value.x) %>% filter(!is.na(relative_change)) 
-ggplot() +geom_point(data=gold_data, aes(x=Date, y=relative_change))
+gold_changes <- gold %>% mutate(next_date = lead(Date))
+gold_data <- full_join(gold_changes, gold, by= c("next_date"= "Date")) %>% mutate(relative_change = (Value.y-Value.x)/Value.x) %>% filter(!is.na(relative_change)) 
+
+ggplot() +geom_line(data=gold_data, aes(x=Date, y=relative_change), col="red") +geom_line(data=bitcoin_data, aes(x=Date, y=relative_change), col="blue") + coord_cartesian(xlim=c(ymd(20100708),ymd(20160418))) + ylab("Relative Change") + ggtitle("Relative Change of Gold and Bitcoin")
 
 
 
   
 ```
 
+Bitcoin is more volatile than Gold, because Bitcoin has larger relative changes per day than Gold. 
 
 
 
