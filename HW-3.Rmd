@@ -15,6 +15,7 @@ library(dplyr)
 library(readr)
 library(lubridate)
 library(Quandl)
+library(forcats)
 ```
 
 
@@ -81,8 +82,37 @@ to rate how well we performed.
 
 ```{r, echo=TRUE, message=TRUE, warning=TRUE, fig.width=8, fig.height=4.5}
 set.seed(76)
+#Consolidate categories + rename NA for job data
+profiles <-profiles %>% mutate(job = fct_explicit_na(job,na_level = "Not Reported")) %>% mutate(job =fct_recode(job,
+                                                                                                        "professional"="law / legal services",                                                                                               
+                                                                                                        "professional" = "medicine / health",
+                                                                                                        "entertainment" = "artistic / musical / writer",
+                                                                                                        "entertainment" = "entertainment / media",
+                                                                                                        "administration" = "clerical / administrative",
+                                                                                                        "administration" = "executive / management",
+                                                                                                        "finance" = "banking / financial / real estate",
+                                                                                                        "finance" = "sales / marketing / biz dev",
+                                                                                                        "government" = "political / government",
+                                                                                                        "government" = "military",
+                                                                                                        "tech" = "computer / hardware / software",
+                                                                                                        "tech" = "science / tech / engineering",
+                                                                                                        "travel" = "hospitality / travel",
+                                                                                                        "travel" = "transportation",
+                                                                                                        "none" = "retired",
+                                                                                                        "none" = "unemployed",
+                                                                                
+                                                                                                        "other" = "other",
+                                                                                                        "other" = "rather not say",
+                                                                                                        "education" = "education / academia",
+                                                                                                        "construction" = "construction / craftsmanship")
+                                                                                                        )
+
+# Consolidate categories + rename NA for diet
+profiles <- profiles %>% mutate(diet = fct_explicit_na(diet,na_level = "Not Reported")) %>%  mutate(diet = fct_recode(diet,"anything" = "anything", "religious diet/other"="halal", "religious diet/other"="kosher", "anything"="mostly anything" , "religious diet/other"="mostly halal" , "religious diet/other"="mostly kosher","religious diet/other"= "mostly other","vegetarian/vegan"= "mostly vegan", "vegetarian/vegan"="mostly vegetarian", "religious diet/other"="other", "anything" = "strictly anything", "religious diet/other"="strictly halal", "religious diet/other"="strictly kosher", "religious diet/other"="strictly other" , "vegetarian/vegan"="strictly vegan" , "vegetarian/vegan"="strictly vegetarian" , "vegetarian/vegan"="vegan", "vegetarian/vegan"="vegetarian"))
+
+# Create training and test sets
 training <- profiles %>% sample_n(2997)
-test <- profiles %>% sample_n(56946)
+test <- anti_join(profiles, training, by="id")
 
 ```
 
@@ -95,9 +125,10 @@ regression model to the `training` data. Assign this model to an R object called
 `predict_sex_model`, then rate how well the model performs on the `training` data.
 
 ```{r, echo=TRUE, message=TRUE, warning=TRUE, fig.width=8, fig.height=4.5}
-predict_sex_model <- glm(is_female ~ 1, data=training, family="binomial")
+predict_sex_model <- glm(is_female ~ diet + job, data=training, family="binomial")
 broom::tidy(predict_sex_model)
-1/(1+exp(-(  -0.3005402  )))
+
+
 ```
 
 
@@ -111,14 +142,18 @@ for each users' sex, then rate how well the model performs on the `test` data.
 type="response")` does? The help file is located in `?predict.glm`
 
 ```{r, echo=TRUE, message=TRUE, warning=TRUE, fig.width=8, fig.height=4.5}
-predict(predict_sex_model, newdata=test,
-type="response")
+p_hat <- predict(predict_sex_model, newdata=test, type="response")
+ggplot(data=NULL, aes(x=p_hat)) + 
+  geom_histogram()
 
-predict_test_model <- glm(is_female ~ 1, data=test, family="binomial")
-broom::tidy(predict_test_model)
-1/(1+exp(-(  -0.3954071 )))
+test <- test %>% 
+  mutate(p_hat = predict(predict_sex_model, newdata=test, type="response"))
+
+test %>% 
+  select(job, diet, p_hat, is_female)
 ```
 
+Overall, the model performed decently well on the test data. However, when the p-hat values were around .45-.65, the predictions got a little inconsistent. 
 
 
 #### d)
@@ -126,7 +161,7 @@ broom::tidy(predict_test_model)
 Did the model perform better on the `training` data or the `test` data? Why
 do you think that is?
 
-
+The model definitely peformed better on the training data, because the model was based off of the training data. 
 
 
 
