@@ -197,11 +197,8 @@ ggplot(data=gold, aes(x=Date, y=Value)) +geom_point()
 gold_changes <- gold %>% mutate(next_date = lead(Date))
 gold_data <- full_join(gold_changes, gold, by= c("next_date"= "Date")) %>% mutate(relative_change = (Value.y-Value.x)/Value.x) %>% filter(!is.na(relative_change)) 
 
-<<<<<<< HEAD
 ggplot() +geom_line(data=gold_data, aes(x=Date, y=relative_change), col="red") +geom_line(data=bitcoin_data, aes(x=Date, y=relative_change), col="blue") + coord_cartesian(xlim=c(ymd(20100718),ymd(20160418))) + ylab("Relative Change") + ggtitle("Relative Change of Gold and Bitcoin")
-=======
-ggplot() +geom_line(data=gold_data, aes(x=Date, y=relative_change), col="red") +geom_line(data=bitcoin_data, aes(x=Date, y=relative_change), col="blue") + coord_cartesian(xlim=c(ymd(20100708),ymd(20160418))) + ylab("Relative Change") + ggtitle("Relative Change of Gold and Bitcoin")
->>>>>>> b3c143a7f6ac9e49cb9db1ac934ea86f79bb9492
+
 
 
 
