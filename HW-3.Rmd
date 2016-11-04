@@ -186,23 +186,23 @@ bitcoin <- Quandl("BAVERAGE/USD") %>%
     Total_Volume = `Total Volume`
   )
 ggplot(data=bitcoin, aes(x=Date, y=Avg)) +geom_point()
-bitcoin_changes <- bitcoin %>%  mutate(next_day = lead(Date)) 
-bitcoin_data <- full_join(bitcoin_changes, bitcoin, by= c("next_day"= "Date"))  %>% mutate(relative_change = (Avg.y-Avg.x)/Avg.x) %>% filter(!is.na(relative_change))
+bitcoin_changes <- bitcoin %>%  mutate(previous_day = lead(Date)) 
+bitcoin_data <- full_join(bitcoin_changes, bitcoin, by= c("previous_day"= "Date"))  %>% mutate(percent_change = ((Avg.x-Avg.y)/Avg.y)*100) %>% filter(!is.na(percent_change))
 
 
 
 gold <- Quandl("BUNDESBANK/BBK01_WT5511") %>%
   tbl_df() 
 ggplot(data=gold, aes(x=Date, y=Value)) +geom_point()
-gold_changes <- gold %>% mutate(next_date = lead(Date))
-gold_data <- full_join(gold_changes, gold, by= c("next_date"= "Date")) %>% mutate(relative_change = (Value.y-Value.x)/Value.x) %>% filter(!is.na(relative_change)) 
+gold_changes <- gold %>% mutate(previous_date = lead(Date))
+gold_data <- full_join(gold_changes, gold, by= c("previous_date"= "Date")) %>% mutate(percent_change = ((Value.x-Value.y)/Value.y)*100) %>% filter(!is.na(percent_change)) 
 
-ggplot() +geom_line(data=gold_data, aes(x=Date, y=relative_change), col="red") +geom_line(data=bitcoin_data, aes(x=Date, y=relative_change), col="blue") + coord_cartesian(xlim=c(ymd(20100718),ymd(20160418))) + ylab("Relative Change") + ggtitle("Relative Change of Gold and Bitcoin")
+gold_data <- gold_data %>% mutate(Type="Gold") %>% select(Date, percent_change, Type)
+bitcoin_data <- bitcoin_data %>% mutate(Type="bitcoin") %>% select(Date, percent_change, Type)
+combined_data <- bind_rows(gold_data, bitcoin_data)
+ggplot(combined_data, aes(x=Date, y=percent_change, col=Type)) +
+geom_line() + coord_cartesian(xlim=c(ymd(20100718),ymd(20160418))) + ylab("Percent Change") + ggtitle("Percent Change of Gold and Bitcoin")
 
-
-
-
-  
 ```
 
 Bitcoin is more volatile than Gold, because Bitcoin has larger relative changes per day than Gold. 
