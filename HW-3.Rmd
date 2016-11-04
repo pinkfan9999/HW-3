@@ -128,10 +128,15 @@ regression model to the `training` data. Assign this model to an R object called
 predict_sex_model <- glm(is_female ~ diet + job, data=training, family="binomial")
 broom::tidy(predict_sex_model)
 
+training <- training %>% 
+  mutate(p_hat = predict(predict_sex_model, newdata=training, type="response"))
+
+training_correct <- training %>% filter(p_hat > .5 & is_female==1 | p_hat <.5 & is_female ==0)
+(training_correct %>% tally())/ (training %>% tally()) *100
 
 ```
 
-
+Training set is correct 61% of the time.
 
 #### c)
 
@@ -151,9 +156,13 @@ test <- test %>%
 
 test %>% 
   select(job, diet, p_hat, is_female)
+
+test_correct <- test %>% filter(p_hat > .5 & is_female==1 | p_hat <.5 & is_female ==0)
+(test_correct %>% tally())/ (test %>% tally()) *100
+
 ```
 
-Overall, the model performed decently well on the test data. However, when the p-hat values were around .45-.65, the predictions got a little inconsistent. 
+Test data set is correct 63% of the time.
 
 
 #### d)
@@ -161,8 +170,7 @@ Overall, the model performed decently well on the test data. However, when the p
 Did the model perform better on the `training` data or the `test` data? Why
 do you think that is?
 
-The model definitely peformed better on the training data, because the model was based off of the training data. 
-
+The model  peformed better on the test data than on the training data. Most likely, this is due to the fact that the data has a larger sample population.
 
 
 
